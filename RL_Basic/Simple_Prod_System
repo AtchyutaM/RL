@@ -1,0 +1,97 @@
+import pandas as pd
+import random
+
+class SimpleRLProductionSystem:
+    def __init__(self, max_inventory, max_production, demand, epsilon=0.1):
+        self.max_inventory = max_inventory
+        self.max_production = max_production
+        self.demand = demand
+        self.epsilon = epsilon
+        self.data = pd.DataFrame(columns=['State', 'Action', 'Reward'])
+        self._initialize_data()
+
+    def _initialize_data(self):
+        for state in range(self.max_inventory + 1):
+            for action in range(self.max_production + 1):
+                self.data = self.data.append({'State': state, 'Action': action, 'Reward': float('-inf')}, ignore_index=True)
+
+    def choose_action(self, state):
+        if random.uniform(0, 1) < self.epsilon:
+            return random.randint(0, self.max_production)  # Explore
+        else:
+            state_data = self.data[self.data['State'] == state]
+            return state_data.loc[state_data['Reward'].idxmax()]['Action']  # Exploit
+
+    def get_reward(self, state, action):
+        inventory_after_production = min(state + action, self.max_inventory)
+        if inventory_after_production >= self.demand:
+            return 10 - (inventory_after_production - self.demand)  # Positive reward for meeting demand, less for overproduction
+        else:
+            return -10 + (inventory_after_production - self.demand)  # Negative reward for underproduction
+
+    def update_data(self, state, action, reward):
+        row_index = self.data[(self.data['State'] == state) & (self.data['Action'] == action)].index
+        if self.data.at[row_index[0], 'Reward'] < reward:
+            self.data.at[row_index[0], 'Reward'] = reward
+
+    def simulate(self, episodes):
+        for _ in range(episodes):
+            state = random.randint(0, self.max_inventory)
+            action = self.choose_action(state)
+            reward = self.get_reward(state, action)
+            self.update_data(state, action, reward)
+
+# Example usage
+system = SimpleRLProductionSystem(max_inventory=100, max_production=50, demand=30)
+system.simulate(episodes=1000)
+print(system.data)
+
+import pandas as pd
+import random
+
+class SimpleRLProductionSystem:
+    def __init__(self, max_inventory, max_production, demand, epsilon=0.1):
+        self.max_inventory = max_inventory
+        self.max_production = max_production
+        self.demand = demand
+        self.epsilon = epsilon
+        self.data = pd.DataFrame(columns=['State', 'Action', 'Reward'])
+        self._initialize_data()
+
+    def _initialize_data(self):
+        rows = []
+        for state in range(self.max_inventory + 1):
+            for action in range(self.max_production + 1):
+                rows.append({'State': state, 'Action': action, 'Reward': float('-inf')})
+        self.data = pd.concat([self.data, pd.DataFrame(rows)], ignore_index=True)
+
+    def choose_action(self, state):
+        if random.uniform(0, 1) < self.epsilon:
+            return random.randint(0, self.max_production)  # Explore
+        else:
+            state_data = self.data[self.data['State'] == state]
+            return state_data.loc[state_data['Reward'].idxmax()]['Action']  # Exploit
+
+    def get_reward(self, state, action):
+        inventory_after_production = min(state + action, self.max_inventory)
+        if inventory_after_production >= self.demand:
+            return 10 - (inventory_after_production - self.demand)  # Positive reward for meeting demand, less for overproduction
+        else:
+            return -10 + (inventory_after_production - self.demand)  # Negative reward for underproduction
+
+    def update_data(self, state, action, reward):
+        row_index = self.data[(self.data['State'] == state) & (self.data['Action'] == action)].index
+        if self.data.at[row_index[0], 'Reward'] < reward:
+            self.data.at[row_index[0], 'Reward'] = reward
+
+    def simulate(self, episodes):
+        for _ in range(episodes):
+            state = random.randint(0, self.max_inventory)
+            action = self.choose_action(state)
+            reward = self.get_reward(state, action)
+            self.update_data(state, action, reward)
+
+# Example usage
+system = SimpleRLProductionSystem(max_inventory=100, max_production=50, demand=30)
+system.simulate(episodes=1000)
+print(system.data)

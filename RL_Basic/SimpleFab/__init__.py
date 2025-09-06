@@ -1,0 +1,1 @@
+from SimpleFab.config import make_common_config
